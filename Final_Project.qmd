@@ -1,0 +1,135 @@
+---
+title: "Final Project Report"
+subtitle: "MEPC 83 – Country Submissions Analysis"
+author: "Sindhura Polepalli"
+format: 
+  pdf:
+    toc: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+## Introduction
+
+The project traces environmental justice within the submissions made at the International Maritime Organization's 83rd Marine Environment Protection Committee and locates the countries making the submissions on the map
+
+## Objective
+
+-Identify environmental justice themes within MEPC 83 submissions
+
+-Map the countries that submitted documents to show geographic patterns of participation.
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(countrycode)
+library(rnaturalearth)
+library(sf)
+library(rnaturalearthdata)
+library(ggspatial)
+library(readr)       # for reading CSV files
+
+library(dplyr)       # for data manipulation
+library(patchwork)   # for combining multiple plots
+library(here)        # for relative paths
+library(treemapify)
+library(igraph)
+library(ggraph)
+library(circlize)
+
+
+
+# Read Excel file (make sure this file path is correct)
+country_data <- read_excel("data/raw/MEPC 83_Files names.xlsx")
+
+# Extract filenames
+files <- country_data$`File Name`
+
+# Extract submitters inside parentheses
+raw_submitters <- str_extract(files, "\\((.*?)\\)") |> 
+  str_remove_all("[()]")
+
+# Split multiple names
+submitters <- raw_submitters |>
+  str_split(",|and") |>
+  unlist() |>
+  str_trim()
+
+# Identify countries
+countries_detected <- countrycode(
+  submitters,
+  origin = "country.name",
+  destination = "country.name"
+)
+
+# Clean list
+country_list <- countries_detected |>
+  discard(is.na) |>
+  unique() |>
+  sort()
+
+
+# READING DATA FOR BAR CHART
+data <- read_csv("data/raw/EJ_data.csv")
+```
+
+## Data Sources
+- IMO documents
+- code-coocuurance data from Atlas.ti
+
+
+## Data Processing
+
+Data processing was done for co-occurrence matrix exported from Atlas.ti using several R libraries, including readxl, readr, dplyr, tidyr, stringr, and janitor. The data is imported from Excel, and R processing standardizes column names, removes empty rows and columns, and replaces missing numeric values with zeros. Data processing includes renaming the first column to Framework and reshapes the wide co-occurrence matrix into a long, tidy format with Framework, Cooccurrence, and Frequency columns, keeping only positive frequencies. Additional text cleaning removes bullets, grade labels (e.g., “Gr=12”), underscores, line breaks, and unnecessary spaces, while applying title case formatting. The cleaned, organized dataset is then exported as a CSV file for further analysis. Further, the countries that submitted that data have been spatially analysed and mapped.
+
+## Main Findings
+## Figure 1
+```{r}
+#| fig-cap: "Countries that submitted documents for MEPC 83 (Net Zero Framework)."
+
+world <- ne_countries(scale = "medium", returnclass = "sf")
+
+countries_sf <- world |> 
+  filter(admin %in% country_list)
+
+ggplot() +
+  geom_sf(data = world, fill = "gray90", color = "white") +
+  geom_sf(data = countries_sf, fill = "darkgreen", color = "black") +
+  annotation_scale(location = "bl") +
+  annotation_north_arrow(location = "tl",
+                         style = north_arrow_fancy_orienteering()) +
+  labs(title = "MEPC 83 Submitting Countries")
+```
+
+
+## Figure 2
+```{r}
+#| fig-cap: "Bar Chart on the frequency of co-occurances of Environmental Justice"
+
+# ---------------------------- #
+# Visualization 1: Bar chart
+# ---------------------------- #
+
+bar_plot <- ggplot(data, aes(x = reorder(Cooccurrence, Frequency),
+                             y = Frequency, fill = Framework)) +
+  geom_col(show.legend = FALSE) +   # geom_col = bar chart for pre-summarized data
+  coord_flip() +
+  labs(
+    title = "Frequency of co-occurrences",
+    x = "Co-occurrence",
+    y = "Frequency (Count)",
+    caption = "Source: Environmental Justice Co-occurrence Data"
+  ) +
+  theme_bw() +                      # Non-default theme
+  theme(
+    plot.title = element_text(face = "bold", size = 14),
+    axis.text = element_text(size = 10)
+  )
+
+bar_plot
+```
+
+## References
+- IMO documents
