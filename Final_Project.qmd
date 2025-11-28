@@ -82,7 +82,8 @@ data <- read_csv("data/raw/EJ_data.csv")
 
 ## Data Processing
 
-Data processing was done for co-occurrence matrix exported from Atlas.ti using several R libraries, including readxl, readr, dplyr, tidyr, stringr, and janitor. The data is imported from Excel, and R processing standardizes column names, removes empty rows and columns, and replaces missing numeric values with zeros. Data processing includes renaming the first column to Framework and reshapes the wide co-occurrence matrix into a long, tidy format with Framework, Cooccurrence, and Frequency columns, keeping only positive frequencies. Additional text cleaning removes bullets, grade labels (e.g., “Gr=12”), underscores, line breaks, and unnecessary spaces, while applying title case formatting. The cleaned, organized dataset is then exported as a CSV file for further analysis. Further, the countries that submitted that data have been spatially analysed and mapped.
+Data processing was done for co-occurrence matrix exported from Atlas.ti using several R libraries, including readxl, readr, dplyr, tidyr, stringr, and janitor. The data is imported from Excel, and R processing standardizes column names, removes empty rows and columns, and replaces missing numeric values with zeros. Data processing includes renaming the first column to Framework and reshapes the wide co-occurrence matrix into a long, tidy format with Framework, Cooccurrence, and Frequency columns, keeping only positive frequencies. Additional text cleaning removes bullets, grade labels (e.g., “Gr=12”), underscores, line breaks, and unnecessary spaces, while applying title case formatting.The cleaned dataset contains `r nrow(data)` co-occurrence records used in the analysis.
+The cleaned, organized dataset is then exported as a CSV file for further analysis. Further, the countries that submitted that data have been spatially analysed and mapped. 
 
 ## Main Findings
 ## Figure 1
